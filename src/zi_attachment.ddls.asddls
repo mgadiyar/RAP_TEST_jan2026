@@ -9,7 +9,7 @@ association to parent zi_roottest as _Student on $projection.Id = _Student.Id
     id as Id,
     @EndUserText.label: 'Comments'
     comments as Comments,
-    @EndUserText.label: 'Attachments'
+    @EndUserText.label: 'Attachments' //attach
     attachments as Attachments,
     @EndUserText.label: 'Mimetype'
     mimetype as Mimetype,
