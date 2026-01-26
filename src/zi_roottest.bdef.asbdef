@@ -1,0 +1,73 @@
+managed implementation in class zbp_i_roottest unique;
+strict (2);
+with draft;
+
+define behavior for zi_roottest alias Student
+persistent table ztest_raptest
+draft table ztest_rapdraft
+lock master total etag Lastchgdate
+authorization master ( global,instance )
+etag master Locallastchgdate
+{
+  create(authorization : global);
+  update( precheck );
+  delete;
+ draft action Edit;
+ draft action Resume;
+ draft action Activate;
+ draft action Discard;
+ draft determine action Prepare;
+  static factory action CopyStudent[1];
+  association _result { create ; with draft;}
+  association _attach { create ; with draft;}
+  field ( numbering : managed, readonly ) Id;
+  action (features : instance,authorization : instance) setAdmitted result [1] $self;
+  validation ValidateAge on save { field Age ;create; }
+  determination SetCourseDur on modify { field Course ;  }
+  side effects { field Course affects field Courseduration ; }
+  mapping for ztest_raptest
+    {
+      Id               = id;
+      Firstname        = fname;
+      Lastname         = lname;
+      Age              = age;
+      Course           = course;
+      Courseduration   = coursedur;
+      Status           = status;
+      Gender           = gender;
+      Dob              = dob;
+      Locallastchgdate = locallastchgdate;
+      Lastchgdate      = lastchngdate;
+    }
+}
+
+
+define behavior for zi_sturesult alias AcademicResult
+persistent table ztab_result
+draft table ztest_rdraft
+authorization dependent by _Student
+lock dependent by _Student
+{
+
+  update;
+  delete;
+  association _Student{with draft;}
+  field (readonly ) ID;
+  field (readonly ) CourseDesc;
+  field (readonly ) SemDesc;
+  field (readonly ) resultDesc;
+  }
+
+define behavior for zi_attachment alias attachment
+persistent table ztab_attachment
+draft table zattach_rdraft
+authorization dependent by _Student
+lock dependent by _Student
+{
+
+  update;
+  delete;
+  association _Student{with draft;}
+  field (readonly ) ID;
+  field ( numbering : managed, readonly ) AttachId;
+  }

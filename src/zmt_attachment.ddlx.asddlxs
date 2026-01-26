@@ -1,0 +1,30 @@
+@Metadata.layer: #PARTNER
+@UI:{headerInfo:{typeName: 'Attachment',typeNamePlural: 'Attachment',
+title: { type: #STANDARD, label: 'Attachment',value: 'AttachId'},
+description: { type: #STANDARD,label: 'Attachment'}}}
+
+annotate entity ZC_attachment_std
+    with 
+{
+ @UI.facet: [{ id: 'Attachment',purpose: #STANDARD,type: #IDENTIFICATION_REFERENCE,
+                label: 'Atachment',position: 10 }]
+  @UI:{ lineItem: [{ position: 10,label: 'AttachmentID' }]}
+    @UI.hidden: true
+    AttachId;
+    @UI:{ lineItem: [{ position: 20,label: 'StudentID' }],
+  identification : [{ position: 20,label: 'StudentID' }]}
+   Id;
+     @UI:{ lineItem: [{ position: 30,label: 'Comments' }],
+  identification : [{ position: 30,label: 'Comments' }]}
+    Comments;
+     @UI:{ lineItem: [{ position: 40,label: 'Attachments' }],
+  identification : [{ position: 40,label: 'Attachments' }]}
+    Attachments;
+    @UI:{ lineItem: [{ position: 40,label: 'Mimetype' }],
+  identification : [{ position: 40,label: 'Mimetype' }]}
+    Mimetype;
+    @UI:{ lineItem: [{ position: 50,label: 'Filetype' }],
+  identification : [{ position: 50,label: 'Filetype' }]}
+    Filetype;
+    
+}

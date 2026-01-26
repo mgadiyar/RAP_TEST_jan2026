@@ -1,0 +1,6 @@
+@EndUserText.label: 'Service binding for roottest'
+define service Zserv_rootest {
+  expose zc_roottest;
+  expose Zc_STURESULT;
+  expose ZC_attachment_std;
+}
