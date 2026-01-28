@@ -1,0 +1,5 @@
+@EndUserText.label: 'service emltest'
+define service Zserv_emltest {
+  expose ZC_EMLTEST     as Student;
+  expose ZC_STURESULTun as Result;
+}

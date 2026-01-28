@@ -1,0 +1,62 @@
+unmanaged implementation in class zbp_i_emltest unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZI_EMLTEST alias Student
+draft table ztest_rapdraftun
+//late numbering
+early numbering
+lock master total etag Lastchgdate
+authorization master ( instance )
+etag master Locallastchgdate
+{
+  create ( authorization : global );
+  update ( features : instance );
+  delete ( features : instance );
+
+  association _result { create; with draft; }
+
+  draft action Edit;
+  draft action Resume;
+  draft action Activate;
+  draft action Discard;
+  draft determine action Prepare;
+
+  field ( readonly ) Id, Description;
+  mapping for ztest_raptestun
+    {
+      Age              = age;
+      Course           = course;
+      Courseduration   = coursedur;
+      Dob              = dob;
+      Firstname        = fname;
+      Lastname         = lname;
+      Lastchgdate      = lastchngdate;
+      Locallastchgdate = locallastchgdate;
+      Status           = status;
+      Gender           = gender;
+      Id               = id;
+    }
+
+}
+
+define behavior for ZI_STURESULTun alias Result
+draft table ztest_rdraftun
+//late numbering
+early numbering
+lock dependent by _Student
+authorization dependent by _Student
+//etag master <field_name>
+{
+  update;
+  delete;
+  field ( readonly ) Id, SemDesc, CourseDesc, resultDesc;
+  association _Student { with draft; }
+  mapping for ztab_resultun
+    {
+      Course  = course;
+      Results = results;
+      Sem     = Sem;
+      Id      = id;
+    }
+}
