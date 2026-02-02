@@ -7,14 +7,20 @@ CLASS zcl_emlclassun DEFINITION
 
     TYPES: tt_entities    TYPE TABLE FOR CREATE zi_emltest,
            tt_entityupd   TYPE TABLE FOR UPDATE zi_emltest,
-
+           tt_resyupd     TYPE TABLE FOR UPDATE ZI_STURESULTun,
+           tt_resdel      TYPE TABLE FOR DELETE ZI_STURESULTun,
            tt_mappedearly TYPE RESPONSE FOR MAPPED EARLY zi_emltest,
            tt_failedearly TYPE RESPONSE FOR FAILED EARLY zi_emltest,
            tt_researly    TYPE RESPONSE FOR REPORTED EARLY zi_emltest,
            tt_reslat      TYPE RESPONSE FOR REPORTED LATE zi_emltest,
            tt_keys        TYPE TABLE FOR READ IMPORT zi_emltest,
            tt_result      TYPE TABLE FOR READ RESULT zi_emltest,
-           tt_del         TYPE TABLE FOR DELETE zi_emltest.
+           tt_del         TYPE TABLE FOR DELETE zi_emltest,
+           tt_keylock     TYPE TABLE FOR KEY OF zi_emltest,
+           tt_entitiesasc TYPE TABLE FOR CREATE zi_emltest\_result.
+
+    DATA:lt_student     TYPE STANDARD TABLE OF Ztest_raptestun,
+          lt_result   TYPE STANDARD TABLE OF ztab_resultun.
 
 
     "class constuctor
@@ -53,14 +59,45 @@ CLASS zcl_emlclassun DEFINITION
         IMPORTING keys     TYPE tt_del
         CHANGING  mapped   TYPE tt_mappedearly
                   failed   TYPE tt_failedearly
-                  reported TYPE tt_researly.
+                  reported TYPE tt_researly,
+
+      earlynumbering_cba_result
+        IMPORTING entities TYPE tt_entitiesasc
+        CHANGING  mapped   TYPE tt_mappedearly
+                  failed   TYPE tt_failedearly
+                  reported TYPE tt_researly,
+
+      cba_result
+        IMPORTING entities_cba TYPE tt_entitiesasc
+        CHANGING  mapped       TYPE tt_mappedearly
+                  failed       TYPE tt_failedearly
+                  reported     TYPE tt_researly,
+
+      resupdate
+        IMPORTING entities TYPE tt_resyupd
+        CHANGING  mapped   TYPE tt_mappedearly
+                  failed   TYPE tt_failedearly
+                  reported TYPE tt_researly,
+
+      delete_res
+        IMPORTING keys     TYPE  tt_resdel
+        CHANGING  mapped   TYPE tt_mappedearly
+                  failed   TYPE tt_failedearly
+                  reported TYPE tt_researly,
+
+      lock
+        IMPORTING keys     TYPE    tt_keylock
+        CHANGING  failed   TYPE tt_failedearly
+                  reported TYPE tt_researly
+        RAISING
+                  cx_abap_lock_failure.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
     CLASS-DATA: mo_instance TYPE REF TO zcl_emlclassun,
-                lt_student  TYPE STANDARD TABLE OF Ztest_raptestun,
-                lt_del  TYPE STANDARD TABLE OF Ztest_raptestun,
-                lt_result   TYPE STANDARD TABLE OF ztab_result,
+                lt_del      TYPE STANDARD TABLE OF Ztest_raptestun,
+
+                lt_resdel   TYPE STANDARD TABLE OF ztab_resultun,
                 gs_mapped   TYPE tt_mappedearly.
 
 
@@ -76,16 +113,8 @@ CLASS zcl_emlclassun IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD earlynumbering_create.
-    DATA(ls_mapped) = gs_mapped.
 
     DATA(lv_newid) = newid( ).
-
-
-    LOOP AT lt_student ASSIGNING FIELD-SYMBOL(<lfs_student>).
-      IF <lfs_student> IS ASSIGNED.
-        <lfs_student>-id = lv_newid.
-      ENDIF.
-    ENDLOOP.
 
     mapped-student = VALUE #( FOR ls_entity IN entities WHERE ( id IS INITIAL )
                       (
@@ -104,7 +133,12 @@ CLASS zcl_emlclassun IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD create.
+    GET TIME STAMP FIELD DATA(timestamp).
     lt_student = CORRESPONDING #( entities MAPPING FROM ENTITY ).
+    LOOP AT lt_student ASSIGNING FIELD-SYMBOL(<lfs_std>).
+      <lfs_std>-lastchngdate  = timestamp.
+      <lfs_std>-locallastchgdate = timestamp.
+    ENDLOOP.
 
     mapped = VALUE #( Student = VALUE #( FOR entity IN entities
     ( %cid = entity-%cid
@@ -115,12 +149,18 @@ CLASS zcl_emlclassun IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD save.
-    IF lt_student[] IS NOT INITIAL.
+    IF lt_student IS NOT INITIAL.
       MODIFY ztest_raptestun FROM TABLE @lt_student.
     ENDIF.
-    if lt_del is not initial.
-     delete ztest_raptestun FROM TABLE @lt_del.
-    endif.
+    IF lt_del IS NOT INITIAL.
+      DELETE ztest_raptestun FROM TABLE @lt_del.
+    ENDIF.
+    IF lt_result IS NOT INITIAL.
+      MODIFY ztab_resultun FROM TABLE @lt_result.
+    ENDIF.
+    IF lt_resdel IS NOT INITIAL.
+      DELETE ztab_resultun FROM TABLE @lt_resdel.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -137,18 +177,61 @@ CLASS zcl_emlclassun IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD update.
-
+  METHOD update. "use control structures
+    GET TIME STAMP FIELD DATA(timestamp).
     lt_student = CORRESPONDING #( entities MAPPING FROM ENTITY ).
-
+    LOOP AT lt_student ASSIGNING FIELD-SYMBOL(<lfs_std>).
+      <lfs_std>-locallastchgdate = timestamp.
+      <lfs_std>-lastchngdate = timestamp.
+    ENDLOOP.
 
   ENDMETHOD.
 
   METHOD delete.
-  SELECT * FROM ztest_raptestun
+
+    SELECT * FROM ztest_raptestun
+      FOR ALL ENTRIES IN @keys
+      WHERE id = @keys-Id
+      INTO TABLE @lt_del.
+
+
+  ENDMETHOD.
+
+  METHOD earlynumbering_cba_result.
+    mapped = VALUE #( result = VALUE #( FOR entity IN entities
+                       FOR tag IN entity-%target
+                         (  %cid = tag-%cid
+                         %is_draft = tag-%is_draft
+                         %key = tag-%key ) ) ).
+  ENDMETHOD.
+
+  METHOD cba_result.
+    lt_result = VALUE #( FOR entitycba IN entities_cba
+                         FOR tag IN entitycba-%target
+                         ( CORRESPONDING #( tag )  ) ).
+
+    mapped = VALUE #(  result = VALUE #(
+                         FOR entitycba IN entities_cba
+                         FOR tag IN entitycba-%target
+                         ( %cid = tag-%cid %is_draft = tag-%is_draft %key = tag-%key ) ) ).
+  ENDMETHOD.
+
+  METHOD resupdate.
+    lt_result =  CORRESPONDING #( entities MAPPING FROM ENTITY ).
+
+  ENDMETHOD.
+
+  METHOD delete_res.
+
+    SELECT * FROM ztab_resultun
     FOR ALL ENTRIES IN @keys
     WHERE id = @keys-Id
-    INTO TABLE @lt_del.
+    and sem = @keys-Sem
+    INTO TABLE @lt_resdel.
+
+  ENDMETHOD.
+
+  METHOD lock.
 
 
   ENDMETHOD.

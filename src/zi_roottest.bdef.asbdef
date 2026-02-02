@@ -12,6 +12,9 @@ etag master Locallastchgdate
   create(authorization : global);
   update( precheck );
   delete;
+    field ( numbering : managed, readonly ) Id;
+    field (readonly) Description;
+  field( mandatory) Firstname,Lastname, Age ;
  draft action Edit;
  draft action Resume;
  draft action Activate;
@@ -20,7 +23,6 @@ etag master Locallastchgdate
   static factory action CopyStudent[1];
   association _result { create ; with draft;}
   association _attach { create ; with draft;}
-  field ( numbering : managed, readonly ) Id;
   action (features : instance,authorization : instance) setAdmitted result [1] $self;
   validation ValidateAge on save { field Age ;create; }
   determination SetCourseDur on modify { field Course ;  }

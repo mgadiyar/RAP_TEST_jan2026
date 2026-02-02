@@ -12,7 +12,8 @@ annotate view ZC_EMLTEST with
                 ]
 
   @UI:{ lineItem: [{  position: 10,label: 'StudentID' },
-  {type: #FOR_ACTION, dataAction: 'CopyStudent',label: 'Student'}],
+  {type: #FOR_ACTION, dataAction: 'CopyStudent',label: 'Student'},
+  { type:#FOR_ACTION,dataAction: 'SetStud',label: 'Set Student' }],
   identification: [{ position: 10,label: 'StudentID' }]}
   Id;
   @UI:{ lineItem: [{  position: 20,label: 'First name' }],

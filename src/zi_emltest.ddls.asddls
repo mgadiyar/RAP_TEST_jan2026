@@ -15,7 +15,9 @@ define root view entity ZI_EMLTEST
       status    as Status,
       gender    as Gender,
       dob       as Dob,
+       @Semantics.systemDateTime.lastChangedAt: true
       lastchngdate as Lastchgdate,
+      @Semantics.systemDateTime.localInstanceLastChangedAt: true
       locallastchgdate as Locallastchgdate,
       _gend,
       _gend.Descr as Description,

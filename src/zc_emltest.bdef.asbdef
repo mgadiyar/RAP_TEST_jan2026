@@ -1,8 +1,10 @@
 projection;
 strict ( 2 );
 use draft;
+use side effects;
 
-define behavior for ZC_EMLTEST //alias <alias_name>
+define behavior for ZC_EMLTEST alias Student
+use etag
 {
   use create;
   use update;
@@ -13,11 +15,13 @@ define behavior for ZC_EMLTEST //alias <alias_name>
   use action Activate;
   use action Discard;
   use action Prepare;
+  use action SetStud;
 
   use association _result { create; with draft; }
 }
 
-define behavior for ZC_STURESULTun //alias <alias_name>
+define behavior for ZC_STURESULTun alias Result
+use etag
 {
   use update;
   use delete;

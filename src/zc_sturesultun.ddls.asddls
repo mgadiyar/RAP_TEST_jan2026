@@ -5,8 +5,8 @@ define view entity ZC_STURESULTun
   as projection on ZI_STURESULTun
 {
   key     Id,
-          Course,
-          Sem,
+  key     Sem,
+          Course,  
           Results,
           CourseDesc,
           SemDesc,
@@ -20,5 +20,5 @@ define view entity ZC_STURESULTun
           _course,
           _result,
           _sem,
-          _Student : redirected to parent zc_emltest
+          _Student : redirected to parent ZC_EMLTEST
 }

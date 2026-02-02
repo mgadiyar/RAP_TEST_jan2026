@@ -15,8 +15,8 @@ define view entity ZI_STURESULTun
   association [0..*] to ZI_resultVAL       as _result  on $projection.Results = _result.Value
 {
   key id                  as Id,
+  key sem                 as Sem,
       course              as Course,
-      sem                 as Sem,
       results             as Results,
       _course.Description as CourseDesc,
       _sem.SemDesc as SemDesc,

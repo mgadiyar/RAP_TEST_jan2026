@@ -15,14 +15,21 @@ etag master Locallastchgdate
   delete ( features : instance );
 
   association _result { create; with draft; }
+  validation Validatefields on save { create; update;}
+  determination coursedur on modify{field Course;}
+  side effects { field Course affects field Courseduration ; }
+  action SetStud parameter ZA_STATUS result[1] $self;
 
   draft action Edit;
   draft action Resume;
   draft action Activate;
   draft action Discard;
-  draft determine action Prepare;
+  draft determine action Prepare { validation Validatefields ;
+   validation Result~Validatefields;
+  }
 
   field ( readonly ) Id, Description;
+  field( mandatory) Firstname,Lastname, Age ;
   mapping for ztest_raptestun
     {
       Age              = age;
@@ -37,7 +44,6 @@ etag master Locallastchgdate
       Gender           = gender;
       Id               = id;
     }
-
 }
 
 define behavior for ZI_STURESULTun alias Result
@@ -52,6 +58,8 @@ authorization dependent by _Student
   delete;
   field ( readonly ) Id, SemDesc, CourseDesc, resultDesc;
   association _Student { with draft; }
+  validation Validatefields on save  { create; update; field Course;}
+  side effects { field Course affects $self,field CourseDesc ; }
   mapping for ztab_resultun
     {
       Course  = course;
